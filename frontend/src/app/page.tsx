@@ -131,7 +131,7 @@ export default function Home() {
                     <div style={{ marginTop: 4, fontSize: 12 }}>{error}</div>
                     <div style={{ marginTop: 6, fontSize: 11, opacity: 0.75 }}>
                       Ensure the FastAPI backend is running at{" "}
-                      <code>http://localhost:8000</code>
+                      <code>https://idbi-default-model.onrender.com</code>
                     </div>
                   </div>
                 </div>
