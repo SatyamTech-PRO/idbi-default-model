@@ -1,0 +1,9 @@
+data/raw_loans.csv
+data/processed.csv
+__pycache__/
+*.pyc
+node_modules/
+.next/
+.env
+.env.local
+*.log
