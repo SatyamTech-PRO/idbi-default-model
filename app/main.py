@@ -11,13 +11,15 @@ This is the layer your Next.js frontend (same pattern as Max Healthcare)
 would call.
 """
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import joblib
 import pandas as pd
 import shap
 import os
+import sqlite3
+import hashlib
 
 app = FastAPI(title="IDBI Default Prediction API")
 
@@ -28,6 +30,21 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+DB_PATH = os.path.join(os.path.dirname(__file__), "users.db")
+
+@app.on_event("startup")
+def startup_event():
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            employee_id TEXT PRIMARY KEY,
+            password_hash TEXT
+        )
+    ''')
+    conn.commit()
+    conn.close()
 
 MODEL_PATH = os.path.join(os.path.dirname(__file__), "..", "models", "default_model.pkl")
 _bundle = None
@@ -74,6 +91,35 @@ class LoanInput(BaseModel):
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+class LoginRequest(BaseModel):
+    employee_id: str
+    password: str
+
+@app.post("/auth/login")
+def auth_login(req: LoginRequest, response: Response):
+    pwd_hash = hashlib.sha256(req.password.encode()).hexdigest()
+    
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    
+    c.execute("SELECT password_hash FROM users WHERE employee_id = ?", (req.employee_id,))
+    row = c.fetchone()
+    
+    if row is None:
+        c.execute("INSERT INTO users (employee_id, password_hash) VALUES (?, ?)", (req.employee_id, pwd_hash))
+        conn.commit()
+        conn.close()
+        return {"success": True, "message": "Account created"}
+    
+    conn.close()
+    
+    stored_hash = row[0]
+    if stored_hash == pwd_hash:
+        return {"success": True, "message": "Login successful"}
+    else:
+        response.status_code = 401
+        return {"success": False, "message": "Incorrect password for this Employee ID"}
 
 
 @app.post("/predict")

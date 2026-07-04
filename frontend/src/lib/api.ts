@@ -19,3 +19,18 @@ export async function predictDefault(
 
   return res.json() as Promise<PredictionResponse>;
 }
+
+export async function loginAuth(employee_id: string, password: string): Promise<{ success: boolean; message: string }> {
+  const res = await fetch(`${API_BASE}/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ employee_id, password }),
+  });
+
+  if (!res.ok && res.status !== 401) {
+    const text = await res.text().catch(() => "Unknown error");
+    throw new Error(`API error ${res.status}: ${text}`);
+  }
+
+  return res.json() as Promise<{ success: boolean; message: string }>;
+}

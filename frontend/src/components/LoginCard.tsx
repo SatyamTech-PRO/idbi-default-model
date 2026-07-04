@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { loginAuth } from "@/lib/api";
 
 interface Props {
   onLogin: () => void;
@@ -10,13 +11,32 @@ export default function LoginCard({ onLogin }: Props) {
   const [employeeId, setEmployeeId] = useState("");
   const [password, setPassword]     = useState("");
   const [touched, setTouched]       = useState(false);
+  const [loading, setLoading]       = useState(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setTouched(true);
-    // Demo gate: any non-empty input is accepted
+    setLoginError(null);
+    
     if (employeeId.trim() && password.trim()) {
-      onLogin();
+      setLoading(true);
+      try {
+        const result = await loginAuth(employeeId.trim(), password.trim());
+        if (result.success) {
+          onLogin();
+        } else {
+          setLoginError(result.message);
+        }
+      } catch (err) {
+        setLoginError(
+          err instanceof Error
+            ? err.message
+            : "An unknown error occurred. Is the backend running?"
+        );
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -41,6 +61,16 @@ export default function LoginCard({ onLogin }: Props) {
 
         {/* ── Divider ── */}
         <div className="login-divider" />
+
+        {loginError && (
+          <div className="alert alert-error" role="alert" style={{ marginBottom: 16 }}>
+            <span className="alert-icon">⚠️</span>
+            <div>
+              <strong>Login Failed</strong>
+              <div style={{ marginTop: 4, fontSize: 12 }}>{loginError}</div>
+            </div>
+          </div>
+        )}
 
         {/* ── Form ── */}
         <form onSubmit={handleSubmit} noValidate>
@@ -84,8 +114,9 @@ export default function LoginCard({ onLogin }: Props) {
             id="sign-in-btn"
             type="submit"
             className="btn-signin"
+            disabled={loading}
           >
-            Sign In
+            {loading ? "Signing In..." : "Sign In"}
           </button>
         </form>
 
