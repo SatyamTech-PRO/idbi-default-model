@@ -59,20 +59,11 @@ pip install -r requirements.txt
    ```
 
 ## Next steps (not yet built)
-- [ ] Next.js frontend calling `/predict` (reuse your Max Healthcare pattern)
+- [ ] Next.js frontend calling `/predict` 
 - [ ] Compare your final AUC/accuracy against the stated 16-22% baseline
       explicitly in your pitch deck
 - [ ] 1-slide diagram: Data -> Segment-aware Model -> Risk Band + Reasons
 - [ ] Have a clear, honest answer ready for "how would this connect to real
       GST/UPI/bank data" even though you're using LendingClub as a stand-in
 
-## Pitch talking points
-- Current baseline: 16-22% accuracy, structured-data-only, fragmented by
-  loan type.
-- Your improvement: single model family that's segment-aware (not
-  fragmented), uses structured + text features, and produces a **standard**
-  Low/Medium/High risk band + reason codes regardless of loan type — this
-  IS the "common interpretation framework" the problem statement asks for.
-- Be upfront that GST/UPI/EPFO-style data isn't public — explain how your
-  pipeline would extend to it (same feature-engineering pattern, new
-  columns) rather than pretending you integrated it.
+
